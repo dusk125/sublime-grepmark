@@ -1,0 +1,46 @@
+[
+	{
+		"id": "preferences",
+		"children":
+		[
+			{
+				"caption": "Package Settings",
+				"id": "package-settings",
+				"children":
+				[
+					{
+						"caption": "Grepmark",
+						"children":
+						[
+							{
+								"command": "open_file",
+								"args": {"file": "${packages}/Grepmark/grepmark.sublime-settings"},
+								"caption": "Settings – Default"
+							},
+							{
+								"command": "open_file",
+								"args": {"file": "${packages}/User/grepmark.sublime-settings"},
+								"caption": "Settings – User"
+							},
+							{ "caption": "-" },
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/Grepmark/Default.sublime-keymap"
+								},
+								"caption": "Key Bindings – Default"
+							},
+							{
+								"command": "open_file",
+								"args": {
+									"file": "${packages}/User/Default (Windows).sublime-keymap"
+								},
+								"caption": "Key Bindings – User"
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+]

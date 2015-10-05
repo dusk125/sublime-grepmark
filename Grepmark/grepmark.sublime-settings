@@ -1,0 +1,10 @@
+{
+	// Automatically mark for the following patterns when a certain type of file is opened.
+	"auto_open": false,
+	"auto_open_types": [
+		".log"
+	],
+	"auto_open_patterns": [
+		"error:", "warning #"
+	],
+}
