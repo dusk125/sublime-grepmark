@@ -2,7 +2,7 @@ import sublime, sublime_plugin
 
 class Grepmark(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, s), None, None)
+		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s), None, None)
 	
 	@staticmethod			
 	def run_with_args(self, view, text):
