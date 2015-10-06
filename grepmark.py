@@ -38,10 +38,8 @@ class Grepmark_Loader(sublime_plugin.EventListener):
 			for t in types:
 				if t in view.file_name():
 					patterns = settings.get("auto_open_patterns", [])
-					pattern = ""
-					for p in patterns:
-						pattern += "|{:s}".format(p)
+					pattern = patterns[0]
+					for p in range(1, len(patterns)):
+						pattern += "|{:s}".format(patterns[p])
 					if pattern:
 						Grepmark.run_with_args(self, view, pattern)
-		else:
-			print("[Grepmark] Auto-open disabled")
