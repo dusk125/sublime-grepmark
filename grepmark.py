@@ -29,6 +29,7 @@ class Grepmark(sublime_plugin.TextCommand):
 class Grepmark_Loader(sublime_plugin.EventListener):
 	
 	def __init__(self):
+		sublime_plugin.EventListener.__init__(self)
 		global settings
 		settings = sublime.load_settings("grepmark.sublime-settings")
 
@@ -38,8 +39,9 @@ class Grepmark_Loader(sublime_plugin.EventListener):
 			for t in types:
 				if t in view.file_name():
 					patterns = settings.get("auto_open_patterns", [])
-					pattern = patterns[0]
-					for p in range(1, len(patterns)):
-						pattern += "|{:s}".format(patterns[p])
-					if pattern:
-						Grepmark.run_with_args(self, view, pattern)
+					if len(patterns):
+						pattern = patterns[0]
+						for p in range(1, len(patterns)):
+							pattern += "|{:s}".format(patterns[p])
+						if pattern:
+							Grepmark.run_with_args(self, view, pattern)
