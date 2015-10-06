@@ -33,7 +33,7 @@
 							{
 								"command": "open_file",
 								"args": {
-									"file": "${packages}/User/Default (Windows).sublime-keymap"
+									"file": "${packages}/User/grepmark.sublime-keymap"
 								},
 								"caption": "Key Bindings – User"
 							}
