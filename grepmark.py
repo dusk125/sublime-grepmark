@@ -15,7 +15,6 @@ class Grepmark(sublime_plugin.TextCommand):
 				if start_region == None:
 					start_region = line_region
 				view.run_command('bookmark_line')
-		# view.run_command('next_bookmark')
 		if start_region != None:
 			view.show(start_region)
 
