@@ -1,5 +1,10 @@
 import sublime, sublime_plugin
 
+try:
+	from BetterBookmarks.BetterBookmarks import BetterBookmarksCommand
+except ImportError:
+	sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
+
 global settings
 settings = sublime.load_settings("grepmark.sublime-settings")
 
@@ -12,10 +17,12 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 	def run_with_args(self, view, text, goto_line):
 		line_regions = view.find_all(text, sublime.IGNORECASE, None, None)
 		for line_region in line_regions:
-			view.sel().clear()
-			view.sel().add(line_region)
-			if Grepmark.should_bookmark(view, line_region):
-				view.run_command('bookmark_line')
+			sel = view.sel()
+			sel.clear()
+			sel.add(line_region)
+			
+			if BetterBookmarksCommand.should_bookmark(view, line_region):
+				BetterBookmarksCommand.bookmark_line(view, line_region)
 
 			if goto_line:
 				regions = view.get_regions("bookmarks")
