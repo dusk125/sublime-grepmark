@@ -7,16 +7,15 @@ class Grepmark(sublime_plugin.TextCommand):
 	@staticmethod			
 	def run_with_args(self, view, text):
 		line_regions = view.find_all(text, sublime.IGNORECASE, None, None)
-		start_region = None
 		for line_region in line_regions:
 			view.sel().clear()
 			view.sel().add(line_region)
 			if Grepmark.should_bookmark(view, line_region):
-				if start_region == None:
-					start_region = line_region
 				view.run_command('bookmark_line')
-		if start_region != None:
-			view.show(start_region)
+
+		regions = view.get_regions("bookmarks")
+		view.run_command("goto_line", {"line": "{:d}".format(
+			view.rowcol(regions[0].begin())[0])})
 
 	@staticmethod
 	def should_bookmark(view, region):
@@ -31,11 +30,8 @@ class Grepmark(sublime_plugin.TextCommand):
 
 class Grepmark_Loader(sublime_plugin.EventListener):
 	
-	def __init__(self):
-		global settings
-		settings = sublime.load_settings("grepmark.sublime-settings")
-
 	def on_load(self, view):
+		settings = sublime.load_settings("grepmark.sublime-settings")
 		if settings.get("auto_open"):
 			types = settings.get("auto_open_patterns", [])
 			variables = view.window().extract_variables()
@@ -49,5 +45,6 @@ class Grepmark_Loader(sublime_plugin.EventListener):
 						pattern += "|{:s}".format(patterns[p])
 					if pattern:
 						Grepmark.run_with_args(self, view, pattern)
+
 			except KeyError:
 				pass
