@@ -1,11 +1,15 @@
 import sublime, sublime_plugin
 
-class Grepmark(sublime_plugin.TextCommand):
+global settings
+settings = sublime.load_settings("grepmark.sublime-settings")
+
+class GrepmarkCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
-		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s), None, None)
+		goto_line = settings.get("ui_search_goto_first", False)
+		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
 	
 	@staticmethod			
-	def run_with_args(self, view, text):
+	def run_with_args(self, view, text, goto_line):
 		line_regions = view.find_all(text, sublime.IGNORECASE, None, None)
 		for line_region in line_regions:
 			view.sel().clear()
@@ -13,9 +17,10 @@ class Grepmark(sublime_plugin.TextCommand):
 			if Grepmark.should_bookmark(view, line_region):
 				view.run_command('bookmark_line')
 
-		regions = view.get_regions("bookmarks")
-		view.run_command("goto_line", {"line": "{:d}".format(
-			view.rowcol(regions[0].begin())[0])})
+			if goto_line:
+				regions = view.get_regions("bookmarks")
+				view.run_command("goto_line", {"line": "{:d}".format(
+					view.rowcol(regions[0].begin())[0])})
 
 	@staticmethod
 	def should_bookmark(view, region):
@@ -28,10 +33,9 @@ class Grepmark(sublime_plugin.TextCommand):
 
 		return True
 
-class Grepmark_Loader(sublime_plugin.EventListener):
+class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	
 	def on_load(self, view):
-		settings = sublime.load_settings("grepmark.sublime-settings")
 		if settings.get("auto_open"):
 			types = settings.get("auto_open_patterns", [])
 			variables = view.window().extract_variables()
@@ -44,7 +48,8 @@ class Grepmark_Loader(sublime_plugin.EventListener):
 					for p in range(1, len(patterns)):
 						pattern += "|{:s}".format(patterns[p])
 					if pattern:
-						Grepmark.run_with_args(self, view, pattern)
+						goto_line = settings.get("auto_open_goto_first", True)
+						Grepmark.run_with_args(self, view, pattern, goto_line)
 
 			except KeyError:
 				pass
