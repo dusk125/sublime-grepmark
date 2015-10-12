@@ -9,6 +9,10 @@ global settings
 settings = sublime.load_settings("grepmark.sublime-settings")
 
 class GrepmarkCommand(sublime_plugin.TextCommand):
+	def __init__(self, edit):
+		sublime_plugin.TextCommand.__init__(self, edit)
+		self.bookmarks = BetterBookmarksCommand(edit)
+
 	def run(self, edit):
 		goto_line = settings.get("ui_search_goto_first", False)
 		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
@@ -21,24 +25,13 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			sel.clear()
 			sel.add(line_region)
 			
-			if BetterBookmarksCommand.should_bookmark(view, line_region):
-				BetterBookmarksCommand.bookmark_line(view, line_region)
+			if self.bookmarks.should_bookmark(view, line_region):
+				self.bookmarks.bookmark_line(view, line_region)
 
 			if goto_line:
 				regions = view.get_regions("bookmarks")
 				view.run_command("goto_line", {"line": "{:d}".format(
 					view.rowcol(regions[0].begin())[0])})
-
-	@staticmethod
-	def should_bookmark(view, region):
-		bookmarks = view.get_regions("bookmarks")
-		line = view.line(region)
-
-		for bookmark in bookmarks:
-			if line.contains(bookmark):
-				return False
-
-		return True
 
 class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	
