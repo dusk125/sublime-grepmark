@@ -26,7 +26,7 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			sel.add(line_region)
 			
 			if self.bookmarks.should_bookmark(view, line_region):
-				self.bookmarks.bookmark_line(view, line_region)
+				self.bookmarks.bookmark_line(view, "bookmarks", line_region)
 
 			if goto_line:
 				regions = view.get_regions("bookmarks")
