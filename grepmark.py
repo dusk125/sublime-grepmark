@@ -1,7 +1,7 @@
 import sublime, sublime_plugin
 
 try:
-	from BetterBookmarks.BetterBookmarks import BetterBookmarksCommand
+	from BetterBookmarks.BetterBookmarks import BBFunctions
 except ImportError:
 	sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
 
@@ -11,7 +11,7 @@ settings = sublime.load_settings("grepmark.sublime-settings")
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
-		self.bookmarks = BetterBookmarksCommand(edit)
+		#self.bookmarks = BetterBookmarksCommand(edit)
 
 	def run(self, edit):
 		goto_line = settings.get("ui_search_goto_first", False)
@@ -25,8 +25,10 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			sel.clear()
 			sel.add(line_region)
 			
-			if self.bookmarks.should_bookmark(view, line_region):
-				self.bookmarks.bookmark_line(view, "bookmarks", line_region)
+			bb = BBFunctions.get_bb_file()
+			if bb.should_bookmark(line_region):
+				bb.change_to_layer("bookmarks")
+				bb.add_mark(line_region)
 
 			if goto_line:
 				regions = view.get_regions("bookmarks")
