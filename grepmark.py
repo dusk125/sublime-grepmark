@@ -31,27 +31,27 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 				bb.add_mark(line_region)
 
 			if goto_line:
-				regions = view.get_regions("bookmarks")
-				view.run_command("goto_line", {"line": "{:d}".format(
-					view.rowcol(regions[0].begin())[0])})
+				regions = bb.marks["bookmarks"]
+				if regions:
+					view.run_command("goto_line", {"line": "{:d}".format(
+						view.rowcol(regions[0].begin())[0])})
+				else:
+					sublime.status_message("Could not find matches.")
 
 class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	
 	def on_load(self, view):
 		if settings.get("auto_open"):
-			types = settings.get("auto_open_patterns", [])
+			types = settings.get("auto_open_patterns")
 			variables = view.window().extract_variables()
 			extension = sublime.expand_variables("${file_extension}", variables)
 
-			try:
+			if extension in types:
 				patterns = types[extension]
 				if len(patterns):
 					pattern = patterns[0]
 					for p in range(1, len(patterns)):
 						pattern += "|{:s}".format(patterns[p])
 					if pattern:
-						goto_line = settings.get("auto_open_goto_first", True)
-						Grepmark.run_with_args(self, view, pattern, goto_line)
-
-			except KeyError:
-				pass
+						goto_line = settings.get("auto_open_goto_first")
+						GrepmarkCommand.run_with_args(self, view, pattern, goto_line)
