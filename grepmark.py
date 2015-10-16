@@ -11,7 +11,6 @@ settings = sublime.load_settings("grepmark.sublime-settings")
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
-		#self.bookmarks = BetterBookmarksCommand(edit)
 
 	def run(self, edit):
 		goto_line = settings.get("ui_search_goto_first", False)
@@ -43,7 +42,7 @@ class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	def on_load(self, view):
 		if settings.get("auto_open"):
 			types = settings.get("auto_open_patterns")
-			variables = view.window().extract_variables()
+			variables = sublime.active_window().extract_variables()
 			extension = sublime.expand_variables("${file_extension}", variables)
 
 			if extension in types:
