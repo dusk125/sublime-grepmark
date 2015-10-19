@@ -14,7 +14,7 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
 		goto_line = Settings().get("ui_search_goto_first", False)
-		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
+		self.view.window().show_input_panel("Grep for:", self.view.substr(self.view.sel()[0]), lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
 	
 	@staticmethod			
 	def run_with_args(self, view, text, goto_line):
