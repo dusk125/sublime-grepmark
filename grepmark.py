@@ -5,15 +5,15 @@ try:
 except ImportError:
 	sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
 
-global settings
-settings = sublime.load_settings("grepmark.sublime-settings")
+def Settings():
+	return sublime.load_settings("Grepmark.sublime-settings")
 
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
 
 	def run(self, edit):
-		goto_line = settings.get("ui_search_goto_first", False)
+		goto_line = Settings().get("ui_search_goto_first", False)
 		self.view.window().show_input_panel("Grep for:", "", lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
 	
 	@staticmethod			
@@ -26,6 +26,7 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			
 			bb = BBFunctions.get_bb_file()
 			if bb.should_bookmark(line_region):
+				print("In here")
 				bb.change_to_layer("bookmarks")
 				bb.add_mark(line_region)
 
@@ -40,8 +41,8 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	
 	def on_load(self, view):
-		if settings.get("auto_open"):
-			types = settings.get("auto_open_patterns")
+		if Settings().get("auto_open"):
+			types = Settings().get("auto_open_patterns")
 			variables = sublime.active_window().extract_variables()
 			extension = sublime.expand_variables("${file_extension}", variables)
 
@@ -52,5 +53,5 @@ class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 					for p in range(1, len(patterns)):
 						pattern += "|{:s}".format(patterns[p])
 					if pattern:
-						goto_line = settings.get("auto_open_goto_first")
+						goto_line = Settings().get("auto_open_goto_first")
 						GrepmarkCommand.run_with_args(self, view, pattern, goto_line)

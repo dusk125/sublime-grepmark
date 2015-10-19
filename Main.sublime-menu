@@ -14,12 +14,12 @@
 						[
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/Grepmark/grepmark.sublime-settings"},
+								"args": {"file": "${packages}/Grepmark/Grepmark.sublime-settings"},
 								"caption": "Settings – Default"
 							},
 							{
 								"command": "open_file",
-								"args": {"file": "${packages}/User/grepmark.sublime-settings"},
+								"args": {"file": "${packages}/User/Grepmark.sublime-settings"},
 								"caption": "Settings – User"
 							},
 							{ "caption": "-" },
