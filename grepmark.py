@@ -26,7 +26,6 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			
 			bb = BBFunctions.get_bb_file()
 			if bb.should_bookmark(line_region):
-				print("In here")
 				bb.change_to_layer("bookmarks")
 				bb.add_mark(line_region)
 
