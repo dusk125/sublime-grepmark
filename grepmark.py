@@ -1,9 +1,10 @@
 import sublime, sublime_plugin
 
-try:
-	from BetterBookmarks.BetterBookmarks import BBFunctions
-except ImportError:
-	sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
+def plugin_loaded():
+	try:
+		from BetterBookmarks.BetterBookmarks import BBFunctions
+	except ImportError:
+		sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
 
 def Settings():
 	return sublime.load_settings("Grepmark.sublime-settings")
@@ -11,10 +12,14 @@ def Settings():
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
+		self.grep = ''
 
 	def run(self, edit):
 		goto_line = Settings().get("ui_search_goto_first", False)
-		self.view.window().show_input_panel("Grep for:", self.view.substr(self.view.sel()[0]), lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
+		selection = self.view.sel()[0]
+		if selection:
+			self.grep = self.view.substr(selection)
+		sublime.active_window().show_input_panel("Grep for:", self.grep, lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
 	
 	@staticmethod			
 	def run_with_args(self, view, text, goto_line):
@@ -38,7 +43,6 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 					sublime.status_message("Could not find matches.")
 
 class GrepmarkLoaderCommand(sublime_plugin.EventListener):
-	
 	def on_load(self, view):
 		if Settings().get("auto_open"):
 			types = Settings().get("auto_open_patterns")
