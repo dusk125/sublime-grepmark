@@ -1,6 +1,7 @@
 import sublime, sublime_plugin
 
 def plugin_loaded():
+	global BBFunctions
 	try:
 		from BetterBookmarks.BetterBookmarks import BBFunctions
 	except ImportError:
