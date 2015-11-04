@@ -6,7 +6,7 @@ Grepmark uses another of my plugins [BetterBookmarks](https://github.com/dusk125
 #### Git Clone
 First, find out where the packages directory is by going to (Preferences->Browse Packages), use that location in the git clone command.
 #### Package Control
-Coming soon!
+Install from Package Control [here](https://packagecontrol.io/packages/Grepmark).
 ## Usage
 Press the key bound to the grepmark command; by default `f1`, type in a query, and hit enter. Results will be marked by the standard bookmark caret on the BetterBookmarks 'bookmark' layer.
 
