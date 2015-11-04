@@ -4,4 +4,7 @@
 	},
 	"auto_open_goto_first": true,
 	"ui_search_goto_first": false,
+	"search_flags": [
+		"ignore_case"
+	]
 }

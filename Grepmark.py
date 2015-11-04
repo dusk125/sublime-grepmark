@@ -24,7 +24,9 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 	
 	@staticmethod			
 	def run_with_args(self, view, text, goto_line):
-		line_regions = view.find_all(text, sublime.IGNORECASE, None, None)
+		flaglist = Settings().get('search_flags')
+		flags = 0 if 'ignore_case' in flaglist else sublime.IGNORECASE | 0 if 'literal' in flags else sublime.LITERAL
+		line_regions = view.find_all(text, flags, None, None)
 		for line_region in line_regions:
 			sel = view.sel()
 			sel.clear()
