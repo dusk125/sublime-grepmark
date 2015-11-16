@@ -20,10 +20,10 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 		selection = self.view.sel()[0]
 		if selection:
 			self.grep = self.view.substr(selection)
-		sublime.active_window().show_input_panel("Grep for:", self.grep, lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
+		sublime.active_window().show_input_panel("Grep for:", self.grep, lambda s: self.run_with_args(self.view, s, goto_line), None, None)
 	
 	@staticmethod			
-	def run_with_args(self, view, text, goto_line):
+	def run_with_args(view, text, goto_line, layer='bookmarks'):
 		flaglist = Settings().get('search_flags')
 		flags = 0 if 'ignore_case' in flaglist else sublime.IGNORECASE | 0 if 'literal' in flags else sublime.LITERAL
 		line_regions = view.find_all(text, flags, None, None)
@@ -34,11 +34,13 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			
 			bb = BBFunctions.get_bb_file()
 			if bb.should_bookmark(line_region):
-				bb.change_to_layer("bookmarks")
-				bb.add_mark(line_region)
+				if not bb.has_layer(layer):
+					print("Not marking; layer {:s} does not exist.".format(layer))
+					break
+				bb.add_mark(line_region, layer)
 
 			if goto_line:
-				regions = bb.marks["bookmarks"]
+				regions = bb.marks[layer]
 				if regions:
 					view.run_command("goto_line", {"line": "{:d}".format(
 						view.rowcol(regions[0].begin())[0])})
@@ -60,4 +62,4 @@ class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 						pattern += "|{:s}".format(patterns[p])
 					if pattern:
 						goto_line = Settings().get("auto_open_goto_first")
-						GrepmarkCommand.run_with_args(self, view, pattern, goto_line)
+						GrepmarkCommand.run_with_args(view, pattern, goto_line)
