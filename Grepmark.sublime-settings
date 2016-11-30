@@ -6,5 +6,7 @@
 	"ui_search_goto_first": false,
 	"search_flags": [
 		"ignore_case"
-	]
+	],
+	"use_better_bookmarks": true,
+	"bb_layer": "bookmarks",
 }

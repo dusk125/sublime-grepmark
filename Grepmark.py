@@ -1,51 +1,47 @@
 import sublime, sublime_plugin
 
-def plugin_loaded():
-	global BBFunctions
-	try:
-		from BetterBookmarks.BetterBookmarks import BBFunctions
-	except ImportError:
-		sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
-
 def Settings():
 	return sublime.load_settings("Grepmark.sublime-settings")
+
+# In order to use some list functions, python needs to be able to see a sublime.Region as something simpler;
+# 	in this case a tuple.
+def HashMarks(marks):
+	newMarks = []
+	for mark in marks:
+		newMarks.append((mark.a, mark.b))
+
+	return newMarks
 
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
 		self.grep = ''
+		self.layer = Settings().get('bb_layer', 'bookmarks')
 
-	def run(self, edit):
+	def run(self, edit, **args):
+		self.view.window().show_input_panel("Grep for:", self.grep, lambda s: self._run(s), None, None)
+	
+	def _run(self, text):
 		goto_line = Settings().get("ui_search_goto_first", False)
 		selection = self.view.sel()[0]
 		if selection:
 			self.grep = self.view.substr(selection)
-		sublime.active_window().show_input_panel("Grep for:", self.grep, lambda s: self.run_with_args(self.view, s, goto_line), None, None)
-	
-	@staticmethod			
-	def run_with_args(view, text, goto_line, layer='bookmarks'):
-		flaglist = Settings().get('search_flags')
-		flags = 0 if 'ignore_case' in flaglist else sublime.IGNORECASE | 0 if 'literal' in flags else sublime.LITERAL
-		line_regions = view.find_all(text, flags, None, None)
-		for line_region in line_regions:
-			sel = view.sel()
-			sel.clear()
-			sel.add(line_region)
-			
-			bb = BBFunctions.get_bb_file()
-			if bb.should_bookmark(line_region):
-				if not bb.has_layer(layer):
-					print("Not marking; layer {:s} does not exist.".format(layer))
-					break
-				bb.add_mark(line_region, layer)
 
-			if goto_line:
-				regions = bb.marks[layer]
-				if regions:
-					view.run_command("goto_line", {"line": "{:d}".format(
-						view.rowcol(regions[0].begin())[0])})
-				else:
-					sublime.status_message("Could not find matches.")
+		# Actually find all of the instances of the text
+		flaglist = Settings().get('search_flags')
+		flags = sublime.IGNORECASE if 'ignore_case' in flaglist else 0 | sublime.LITERAL if 'literal' in flags else 0
+		line_regions = self.view.find_all(text, flags, None, None)
+
+		if Settings().get('use_better_bookmarks', False):
+			self.view.run_command('better_bookmarks', {'subcommand': 'mark_line', 'line': HashMarks(line_regions), 'layer': self.layer})
+		else:
+			self.view.add_regions('bookmarks', line_regions, 'string', 'bookmark', sublime.PERSISTENT | sublime.HIDDEN)
+
+		if goto_line:
+			if line_regions:
+				self.view.run_command("goto_line", {"line": "{:d}".format(view.rowcol(line_regions[0].begin())[0])})
+			else:
+				sublime.status_message("Could not find matches.")
 
 class GrepmarkLoaderCommand(sublime_plugin.EventListener):
 	def on_load(self, view):
