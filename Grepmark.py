@@ -19,13 +19,13 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 		self.layer = Settings().get('bb_layer', 'bookmarks')
 
 	def run(self, edit, **args):
+		selection = self.view.sel()[0]
+		if selection:
+			self.grep = self.view.substr(selection)
 		self.view.window().show_input_panel("Grep for:", self.grep, lambda s: self._run(s), None, None)
 	
 	def _run(self, text):
 		goto_line = Settings().get("ui_search_goto_first", False)
-		selection = self.view.sel()[0]
-		if selection:
-			self.grep = self.view.substr(selection)
 
 		# Actually find all of the instances of the text
 		flaglist = Settings().get('search_flags')
