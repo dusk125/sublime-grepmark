@@ -1,63 +1,86 @@
 import sublime, sublime_plugin
 
-def plugin_loaded():
-	global BBFunctions
-	try:
-		from BetterBookmarks.BetterBookmarks import BBFunctions
-	except ImportError:
-		sublime.error_message("Could not load dependency BetterBookmarks, make sure it's installed.")
-
 def Settings():
-	return sublime.load_settings("Grepmark.sublime-settings")
+	return sublime.load_settings('Grepmark.sublime-settings')
+
+def Variable(var, window=None):
+	window = window if window else sublime.active_window()
+	return sublime.expand_variables(var, window.extract_variables())
+
+# In order to use some list functions, python needs to be able to see a sublime.Region as something simpler;
+# 	in this case a tuple.
+def HashMarks(marks):
+	newMarks = []
+	for mark in marks:
+		newMarks.append((mark.a, mark.b))
+
+	return newMarks
 
 class GrepmarkCommand(sublime_plugin.TextCommand):
 	def __init__(self, edit):
 		sublime_plugin.TextCommand.__init__(self, edit)
 		self.grep = ''
 
-	def run(self, edit):
-		goto_line = Settings().get("ui_search_goto_first", False)
-		selection = self.view.sel()[0]
-		if selection:
-			self.grep = self.view.substr(selection)
-		sublime.active_window().show_input_panel("Grep for:", self.grep, lambda s: self.run_with_args(self, self.view, s, goto_line), None, None)
+	def run(self, edit, **args):
+		if 'headless' in args:
+			self._run(args)
+		else:
+			selection = self.view.sel()[0]
+			if selection:
+				self.grep = self.view.substr(selection)
+
+			self.view.window().show_input_panel('Grep for:', self.grep, lambda pattern: self._run({}, pattern), None, None)
 	
-	@staticmethod			
-	def run_with_args(self, view, text, goto_line):
-		flaglist = Settings().get('search_flags')
-		flags = 0 if 'ignore_case' in flaglist else sublime.IGNORECASE | 0 if 'literal' in flags else sublime.LITERAL
-		line_regions = view.find_all(text, flags, None, None)
-		for line_region in line_regions:
-			sel = view.sel()
+	def _run(self, args, pattern=None):
+		# Extract variables from args
+		ui = args['ui'] if 'ui' in args else Settings().get('ui')
+		pattern = pattern if pattern else args['pattern']
+		goto_first = args['goto_first'] if 'goto_first' in args else ui['goto_first']
+		make_selection = args['make_selection'] if 'make_selection' in args else ui['make_selection']
+		flags = args['search_flags'] if 'search_flags' in args else Settings().get('search_flags', [])
+
+		# Actually find all of the instances of the pattern
+		ignore_case = sublime.IGNORECASE if 'ignore_case' in flags else 0
+		literal = sublime.LITERAL if 'literal' in flags else 0
+		line_regions = self.view.find_all(pattern, ignore_case | literal, None, None)
+
+		# Highlight all of the found items
+		if make_selection:
+			sel = self.view.sel()
 			sel.clear()
-			sel.add(line_region)
-			
-			bb = BBFunctions.get_bb_file()
-			if bb.should_bookmark(line_region):
-				bb.change_to_layer("bookmarks")
-				bb.add_mark(line_region)
+			sel.add_all(line_regions)
 
-			if goto_line:
-				regions = bb.marks["bookmarks"]
-				if regions:
-					view.run_command("goto_line", {"line": "{:d}".format(
-						view.rowcol(regions[0].begin())[0])})
-				else:
-					sublime.status_message("Could not find matches.")
+		# Use BetterBookmarks if we're configured to
+		bbsettings = args['better_bookmarks'] if 'better_bookmarks' in args else Settings().get('better_bookmarks')
+		if bbsettings['use']:
+			layer = args['layer'] if 'layer' in args else bbsettings['layer']
+			self.view.run_command('better_bookmarks', {'subcommand': 'mark_line', 'line': HashMarks(line_regions), 'layer': layer})
+		else:
+			self.view.add_regions('bookmarks', line_regions, 'string', 'bookmark', sublime.PERSISTENT | sublime.HIDDEN)
 
-class GrepmarkLoaderCommand(sublime_plugin.EventListener):
-	def on_load(self, view):
-		if Settings().get("auto_open"):
-			types = Settings().get("auto_open_patterns")
-			variables = sublime.active_window().extract_variables()
-			extension = sublime.expand_variables("${file_extension}", variables)
+		# Move our view to the first found item
+		if goto_first:
+			if line_regions:
+				self.view.show_at_center(line_regions[0])
+			else:
+				sublime.status_message('Could not find matches.')
 
-			if extension in types:
-				patterns = types[extension]
-				if len(patterns):
-					pattern = patterns[0]
-					for p in range(1, len(patterns)):
-						pattern += "|{:s}".format(patterns[p])
-					if pattern:
-						goto_line = Settings().get("auto_open_goto_first")
-						GrepmarkCommand.run_with_args(self, view, pattern, goto_line)
+class GrepmarkListener(sublime_plugin.EventListener):
+	def on_load_async(self, view):
+		settings = Settings().get('auto_grep')
+		if settings['enabled']:
+			extension = Variable('${file_extension}', view.window())
+			file_patterns = settings['file_patterns']
+
+			if extension in file_patterns.keys():
+				for pattern_object in file_patterns[extension]:
+					if 'enabled' in pattern_object and pattern_object['enabled']:
+						pattern_list = pattern_object['pattern_list']
+						if len(pattern_list):
+							pattern = pattern_list[0]
+							for p in range(1, len(pattern_list)):
+								pattern += '|{:s}'.format(pattern_list[p])
+							if pattern:
+								pattern_object['pattern'] = pattern
+								pattern_object['headless'] = True
+								view.run_command('grepmark', pattern_object)
