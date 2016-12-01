@@ -1,12 +1,38 @@
 {
-	"auto_open": false,
-	"auto_open_patterns": {
+	"auto_grep":
+	{
+		"enabled": true,
+		"file_patterns": 
+		{
+			"py": 
+			[
+				{
+					"enabled": false,
+					"pattern_list": ["def.*"],
+					"better_bookmarks": 
+					{
+						"use": true,
+						"layer": "functions"
+					},
+					"ui": 
+					{
+						"goto_first": false,
+						"make_selection": false
+					},
+					"search_flags": []
+				},
+			],
+		}
 	},
-	"auto_open_goto_first": true,
-	"ui_search_goto_first": false,
-	"search_flags": [
-		"ignore_case"
-	],
-	"use_better_bookmarks": true,
-	"bb_layer": "bookmarks",
+	"ui": 
+	{
+		"goto_first": true,
+		"make_selection": true
+	},
+	"search_flags": ["ignore_case", "literal"],
+	"better_bookmarks":
+	{
+		"use": true,
+		"layer": "bookmarks"
+	}
 }
