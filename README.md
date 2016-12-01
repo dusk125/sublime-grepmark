@@ -1,42 +1,80 @@
 # Sublime Grepmark
 A Sublime Text 3 plugin that searches a file for a pipe delimited regular expressions and bookmarks all matches.
-## Dependency
-Grepmark uses another of my plugins [BetterBookmarks](https://github.com/dusk125/sublime-betterbookmarks) to add the bookmarks to the view. Right now, BetterBookmarks needs to be installed along side of Grepmark, otherwise a nasty error message will pop up and Grepmark will not work.
 ## Installation
 #### Git Clone
 First, find out where the packages directory is by going to (Preferences->Browse Packages), use that location in the git clone command.
 #### Package Control
 Install from Package Control [here](https://packagecontrol.io/packages/Grepmark).
 ## Usage
-Press the key bound to the grepmark command; by default `f1`, type in a query, and hit enter. Results will be marked by the standard bookmark caret on the BetterBookmarks 'bookmark' layer.
+Press the key bound to the grepmark command; by default `f1`, type in a query (either string or reqular expression, depending on what your `search_flags` are set to in the [Settings](README.md#Settings)), and hit enter; results will be marked with one of two ways.
 
-Another feature is to automatically search and mark a file with a certain file extension and with a certain pattern. This will be explained further in the [Settings](README.md#Settings) section
-## KeyBinding
-```
-[
-    {
-        "keys": ["f1"],
-        "command": "grepmark",
-    },
-]
-```
+1. If you have [BetterBookmarks](https://github.com/dusk125/sublime-betterbookmarks) installed and enabled in the Grepmark settings, the BetterBookmarks layer can be configured in the `better_bookmarks` area of the Grepmark settings file; different layers can have different images configured to represent the mark. You can use Better Bookmarks to cycle through the marks, hide them through a layer change, or save them out to a file.
+
+2. A mark using the default Sublime bookmark caret (greater than sign) will be added to the gutter. You can use the default Sublime commands `next_bookmark` and `prev_bookmark` to cycle through the marks.
+
+**NOTE:** If you enable BetterBookmarks with it being installed, marks will not be added.
+## Auto Grep
+Greps can be preformed automatically when a file is opened. For example, in the [Settings](README.md#Settings) below, any file with the `.py` extension will have all of its functions marked in the BetterBookmarks `functions` layer. Each file extension can have multiple greps run at load time; each of the greps is individually configurable to allow overloading of the global options of the same name.
+
+**Note:** For `search_flags`, setting the key to anything (even an empty list) will cause the grep to completely ignore the global `search_flags` values.
 ## Settings
-auto_open (true/false): Should Grepmark listen for on_load events.
-
-auto_open_patterns (extension : pattern(s)): Extension to auto-open and what pattern(s) to search for on the on_load event.
-
-auto_open_goto_first (true/false): Should the view be scrolled to the first bookmark after the on_load event is called.
-
-ui_search_goto_first (true/false): Should the view be scrolled to the first bookmark after the user executes the grepmark command.
-#### Example
 ```
 {
-	"auto_open": true,
-	"auto_open_patterns": {
-		".md": ["sublime", "bookmark"],
+	"auto_grep":
+	{
+		// Should marks be added to files with matching extensions based on the configured rules
+		"enabled": true,
+		// A dictionary of file extensions that contain the auto_grep configuration
+		"extensions": 
+		{
+			"py": 
+			[
+				{
+					// Should this specific search be run
+					"enabled": false,
+					// A list of patterns to search for
+					"pattern_list": ["def.*"],
+					// See 'better_bookmarks' in the 'global' section
+					"better_bookmarks": 
+					{
+						"use": true,
+						"layer": "functions"
+					},
+					// See 'ui' in the 'global' section
+					"ui": 
+					{
+						// Should the viewport scroll to the first occurrence
+						"goto_first": false,
+						// Should all matches become the active selection
+						"make_selection": false
+					},
+					// See 'search_flags' in the 'global' section
+					"search_flags": []
+				},
+			],
+		}
 	},
-	"auto_open_goto_first": true,
-	"ui_search_goto_first": false,
+	"global":
+	{
+		"ui": 
+		{
+			// Should the viewport scroll to the first occurrence
+			"goto_first": true,
+			// Should all matches become the active selection
+			"make_selection": true
+		},
+		// Search flags:
+		//   ignore_case: Searching doesn't care about letter case
+		//   literal: Searches using strings instead of regular expressions
+		"search_flags": ["ignore_case", "literal"],
+		"better_bookmarks":
+		{
+			// Should Better Bookmarks be used to mark the file
+			"use": true,
+			// Which Better Bookmarks layer should be marked
+			"layer": "bookmarks"
+		}
+	}
 }
 ```
 ## License
