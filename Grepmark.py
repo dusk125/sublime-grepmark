@@ -33,11 +33,12 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 	
 	def _run(self, args, pattern=None):
 		# Extract variables from args
-		ui = args['ui'] if 'ui' in args else Settings().get('ui')
+		globals = Settings().get('global')
+		ui = args['ui'] if 'ui' in args else globals.get('ui')
 		pattern = pattern if pattern else args['pattern']
 		goto_first = args['goto_first'] if 'goto_first' in args else ui['goto_first']
 		make_selection = args['make_selection'] if 'make_selection' in args else ui['make_selection']
-		flags = args['search_flags'] if 'search_flags' in args else Settings().get('search_flags', [])
+		flags = args['search_flags'] if 'search_flags' in args else globals.get('search_flags', [])
 
 		# Actually find all of the instances of the pattern
 		ignore_case = sublime.IGNORECASE if 'ignore_case' in flags else 0
@@ -51,7 +52,7 @@ class GrepmarkCommand(sublime_plugin.TextCommand):
 			sel.add_all(line_regions)
 
 		# Use BetterBookmarks if we're configured to
-		bbsettings = args['better_bookmarks'] if 'better_bookmarks' in args else Settings().get('better_bookmarks')
+		bbsettings = args['better_bookmarks'] if 'better_bookmarks' in args else globals.get('better_bookmarks')
 		if bbsettings['use']:
 			layer = args['layer'] if 'layer' in args else bbsettings['layer']
 			self.view.run_command('better_bookmarks', {'subcommand': 'mark_line', 'line': HashMarks(line_regions), 'layer': layer})
@@ -70,10 +71,10 @@ class GrepmarkListener(sublime_plugin.EventListener):
 		settings = Settings().get('auto_grep')
 		if settings['enabled']:
 			extension = Variable('${file_extension}', view.window())
-			file_patterns = settings['file_patterns']
+			extensions = settings['extensions']
 
-			if extension in file_patterns.keys():
-				for pattern_object in file_patterns[extension]:
+			if extension in extensions.keys():
+				for pattern_object in extensions[extension]:
 					if 'enabled' in pattern_object and pattern_object['enabled']:
 						pattern_list = pattern_object['pattern_list']
 						if len(pattern_list):

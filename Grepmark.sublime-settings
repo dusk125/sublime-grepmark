@@ -1,38 +1,58 @@
 {
 	"auto_grep":
 	{
+		// Should marks be added to files with matching extensions based on the configured rules
 		"enabled": true,
-		"file_patterns": 
+		// A dictionary of file extensions that contain the auto_grep configuration
+		"extensions": 
 		{
 			"py": 
 			[
 				{
+					// Should this specific search be run
 					"enabled": false,
+					// A list of patterns to search for
 					"pattern_list": ["def.*"],
+					// See 'better_bookmarks' in the 'global' section
 					"better_bookmarks": 
 					{
 						"use": true,
 						"layer": "functions"
 					},
+					// See 'ui' in the 'global' section
 					"ui": 
 					{
+						// Should the viewport scroll to the first occurrence
 						"goto_first": false,
+						// Should all matches become the active selection
 						"make_selection": false
 					},
+					// See 'search_flags' in the 'global' section
 					"search_flags": []
 				},
 			],
 		}
 	},
-	"ui": 
+	"global":
 	{
-		"goto_first": true,
-		"make_selection": true
-	},
-	"search_flags": ["ignore_case", "literal"],
-	"better_bookmarks":
-	{
-		"use": true,
-		"layer": "bookmarks"
+		"ui": 
+		{
+			// Should the viewport scroll to the first occurrence
+			"goto_first": true,
+			// Should all matches become the active selection
+			"make_selection": true
+		},
+		// Search flags:
+		//   ignore_case: Searching doesn't care about letter case
+		//   literal: Searches using strings instead of regular expressions
+		"search_flags": ["ignore_case", "literal"],
+		"better_bookmarks":
+		{
+			// Should Better Bookmarks be used to mark the file
+			// https://github.com/dusk125/sublime-betterbookmarks
+			"use": true,
+			// Which Better Bookmarks layer should be marked
+			"layer": "bookmarks"
+		}
 	}
 }
